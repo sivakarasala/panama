@@ -1,6 +1,18 @@
 use std::collections::VecDeque;
 use std::sync::{Arc, Condvar, Mutex};
 
+// Flavors:
+//  - Synchronous channels: Channel where send() can block. Limited capacity.
+//      - Mutex + Condvar: VecDeque
+//      - Atomic VecDeque (atomic queue) + thread::park + thread::Thread::notify (crossbeam)
+//  - Asynchronous channels: Channel where send() cannot block. Unbounded.
+//      - Mutex + Condvar + VecDeque
+//      - Mutex + Condvar + LinkedList
+//      - Atomic linked list, linked list of T
+//      - Atomic block linked list, linked list of atomic VecDeque<T> (crossbeam)
+//  - Rendezvous channels: Synchronous with capacity = 0. Used for thread synchronization
+//  - Oneshot channels: Any capacity. In practice, only one call to send().
+
 pub struct Sender<T> {
     shared: Arc<Shared<T>>,
 }
